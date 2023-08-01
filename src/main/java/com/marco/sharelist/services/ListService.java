@@ -4,6 +4,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.*;
+import com.marco.sharelist.commons.CryptoUtils;
 import com.marco.sharelist.commons.Utils;
 import com.marco.sharelist.entity.ShareList;
 import org.slf4j.Logger;
@@ -59,9 +60,11 @@ public class ListService {
 
 
     @EventListener(ApplicationReadyEvent.class)
-    public void firebaseInit() throws IOException {
+    public void firebaseInit() throws Throwable {
 
         logger.info("Inizializzazione firebase");
+
+
 
         FileInputStream serviceAccount =
                 new FileInputStream("src/main/resources/static/sharelist-2fe3c-firebase-adminsdk-zmm61-9bda6d75d3.json");
@@ -111,5 +114,22 @@ public class ListService {
         currentListRef.addValueEventListener(valueEventListener);
 
         logger.info("Exit updateListData method with id " + id);
+    }
+
+    public void deleteList(String id) {
+
+        logger.info("Enter deleteList method with id " + id);
+
+        DatabaseReference mainRef = database.getReference("sharelists");
+
+        mainRef.child(id).removeValue(new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+
+            }
+        });
+
+        logger.info("Exit deleteList method with id " + id);
+
     }
 }
