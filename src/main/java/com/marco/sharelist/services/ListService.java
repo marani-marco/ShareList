@@ -15,7 +15,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,28 +59,6 @@ public class ListService {
         logger.info("Exit saveList method");
 
     }
-
-
-    @EventListener(ApplicationReadyEvent.class)
-    public void firebaseInit() throws Throwable {
-
-        logger.info("Inizializzazione firebase");
-
-
-
-        FileInputStream serviceAccount =
-                new FileInputStream("src/main/resources/static/sharelist-2fe3c-firebase-adminsdk-zmm61-9bda6d75d3.json");
-
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl("https://sharelist-2fe3c-default-rtdb.europe-west1.firebasedatabase.app")
-                .build();
-
-        FirebaseApp.initializeApp(options);
-
-        database = FirebaseDatabase.getInstance();
-    }
-
 
     public void updateListData(String id, ShareList shareList) throws Exception {
         logger.info("Enter updateListData method with id " + id);
@@ -131,5 +111,32 @@ public class ListService {
 
         logger.info("Exit deleteList method with id " + id);
 
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void firebaseInit() throws Throwable {
+
+        logger.info("Inizializzazione firebase");
+
+        CryptoUtils.decrypt(
+                new FileInputStream("src/main/resources/firebase.json"),
+                new FileOutputStream("src/main/resources/firebase_decrypt.json"));
+
+        FileInputStream serviceAccount =
+                new FileInputStream("src/main/resources/firebase_decrypt.json");
+
+        FirebaseOptions options = new FirebaseOptions.Builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setDatabaseUrl("https://sharelist-2fe3c-default-rtdb.europe-west1.firebasedatabase.app")
+                .build();
+
+        FirebaseApp.initializeApp(options);
+
+        database = FirebaseDatabase.getInstance();
+
+        File jsonDecrypt = new File("src/main/resources/firebase_decrypt.json");
+
+        if(jsonDecrypt.delete())
+            logger.info("File decrypt cancellato");
     }
 }

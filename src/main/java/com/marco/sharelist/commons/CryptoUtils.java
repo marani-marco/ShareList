@@ -10,15 +10,18 @@ import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class CryptoUtils {
-    public static void encrypt(String key, InputStream is, OutputStream os) throws Throwable {
-        encryptOrDecrypt(key, Cipher.ENCRYPT_MODE, is, os);
+
+    private static final String key = "giTKXQcLDmjEMkjacXHD";
+
+    public static void encrypt(InputStream is, OutputStream os) throws Throwable {
+        encryptOrDecrypt(Cipher.ENCRYPT_MODE, is, os);
     }
 
-    public static void decrypt(String key, InputStream is, OutputStream os) throws Throwable {
-        encryptOrDecrypt(key, Cipher.DECRYPT_MODE, is, os);
+    public static void decrypt(InputStream is, OutputStream os) throws Throwable {
+        encryptOrDecrypt(Cipher.DECRYPT_MODE, is, os);
     }
 
-    public static void encryptOrDecrypt(String key, int mode, InputStream is, OutputStream os) throws Throwable {
+    public static void encryptOrDecrypt(int mode, InputStream is, OutputStream os) throws Throwable {
 
         DESKeySpec dks = new DESKeySpec(key.getBytes());
         SecretKeyFactory skf = SecretKeyFactory.getInstance("DES");

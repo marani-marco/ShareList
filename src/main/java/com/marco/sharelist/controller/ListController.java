@@ -22,9 +22,7 @@ public class ListController {
     @GetMapping(value="/{id}", produces= MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ShareList getSharedList(@PathVariable("id") String id) throws Throwable {
 
-      /*  CryptoUtils.encrypt("Mary has one cat1",
-                new FileInputStream("src/main/resources/static/sharelist-2fe3c-firebase-adminsdk-zmm61-9bda6d75d3.json"),
-                new FileOutputStream("src/main/resources/static/sharelist-2fe3c-firebase-adminsdk-zmm61-9bda6d75d3_crypto.json"));*/
+
 
         /*final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference("sharelists");
