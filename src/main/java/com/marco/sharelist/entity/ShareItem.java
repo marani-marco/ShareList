@@ -2,19 +2,19 @@ package com.marco.sharelist.entity;
 
 public class ShareItem {
 
-    private String listId;
+    private String itemId;
     private String title;
     private String description;
     private String userAssigned;
     private Boolean completed;
     private Boolean confirmComplete;
 
-    public String getListId() {
-        return listId;
+    public String getItemId() {
+        return itemId;
     }
 
-    public void setListId(String listId) {
-        this.listId = listId;
+    public void setItemId(String itemId) {
+        this.itemId = itemId;
     }
 
     public String getTitle() {

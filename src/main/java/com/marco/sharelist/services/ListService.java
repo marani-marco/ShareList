@@ -1,11 +1,13 @@
 package com.marco.sharelist.services;
 
+import com.google.api.core.SettableApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.*;
 import com.marco.sharelist.commons.CryptoUtils;
 import com.marco.sharelist.commons.Utils;
+import com.marco.sharelist.entity.ShareItem;
 import com.marco.sharelist.entity.ShareList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +21,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class ListService {
@@ -29,6 +31,8 @@ public class ListService {
     private FirebaseDatabase database;
 
     public void saveList(ShareList shareList){
+
+        database = FirebaseDatabase.getInstance();
 
         logger.info("Enter saveList method");
 
@@ -63,6 +67,8 @@ public class ListService {
     public void updateListData(String id, ShareList shareList) throws Exception {
         logger.info("Enter updateListData method with id " + id);
 
+        database = FirebaseDatabase.getInstance();
+
         DatabaseReference mainRef = database.getReference("sharelists");
 
         final DatabaseReference currentListRef = mainRef.child(id);
@@ -75,6 +81,7 @@ public class ListService {
                     Map<String, Object> shareListUpdate = new HashMap<>();
                     shareListUpdate.put("title", shareList.getTitle());
                     shareListUpdate.put("description", shareList.getDescription());
+                    shareListUpdate.put("type", shareList.getType());
 
                     currentListRef.updateChildrenAsync(shareListUpdate);
                     currentListRef.removeEventListener(this);
@@ -100,6 +107,8 @@ public class ListService {
 
         logger.info("Enter deleteList method with id " + id);
 
+        database = FirebaseDatabase.getInstance();
+
         DatabaseReference mainRef = database.getReference("sharelists");
 
         mainRef.child(id).removeValue(new DatabaseReference.CompletionListener() {
@@ -113,30 +122,96 @@ public class ListService {
 
     }
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void firebaseInit() throws Throwable {
+    public ShareList getList(String id) {
 
-        logger.info("Inizializzazione firebase");
-
-        CryptoUtils.decrypt(
-                new FileInputStream("src/main/resources/firebase.json"),
-                new FileOutputStream("src/main/resources/firebase_decrypt.json"));
-
-        FileInputStream serviceAccount =
-                new FileInputStream("src/main/resources/firebase_decrypt.json");
-
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl("https://sharelist-2fe3c-default-rtdb.europe-west1.firebasedatabase.app")
-                .build();
-
-        FirebaseApp.initializeApp(options);
+        logger.info("Enter getList method");
 
         database = FirebaseDatabase.getInstance();
 
-        File jsonDecrypt = new File("src/main/resources/firebase_decrypt.json");
+        final SettableApiFuture<DataSnapshot> future = SettableApiFuture.create();
 
-        if(jsonDecrypt.delete())
-            logger.info("File decrypt cancellato");
+        DatabaseReference mainRef = database.getReference("sharelists");
+        mainRef.child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                future.set(dataSnapshot);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                future.setException(databaseError.toException());
+            }
+        });
+        try {
+
+            DataSnapshot snapshot = future.get();
+
+            ShareList shareList = new ShareList();
+
+            snapshot.getChildren().forEach(l -> {
+                switch (l.getKey()){
+
+                    case "title":
+                        shareList.setTitle((String)l.getValue());
+                        break;
+
+                    case "description":
+                        shareList.setDescription((String)l.getValue());
+                        break;
+
+                    case "type":
+                        shareList.setType((String)l.getValue());
+                        break;
+
+                    case "userId":
+                        shareList.setUserId((String)l.getValue());
+                        break;
+                }
+            });
+
+            List<ShareItem> items = new ArrayList<>();
+
+            snapshot.child("items").getChildren().forEach(i -> {
+
+                ShareItem item = i.getValue(ShareItem.class);
+                item.setItemId(i.getKey());
+                items.add(item);
+            });
+
+            shareList.setItems(items);
+
+            return shareList;
+        } catch(InterruptedException | ExecutionException e) {
+            logger.error(e.toString());
+            return null;
+        }
+
+        /*DatabaseReference mainRef = database.getReference("sharelists");
+
+        final DatabaseReference currentListRef = mainRef.child(id);
+
+        ShareList shareList = new ShareList();
+
+        ValueEventListener valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                shareList = snapshot.getValue(ShareList.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        currentListRef.addValueEventListener(valueEventListener);
+
+        logger.info("Exit getList method");
+
+        return shareList;*/
+
+
+
     }
+
 }

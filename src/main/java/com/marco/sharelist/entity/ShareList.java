@@ -1,5 +1,6 @@
 package com.marco.sharelist.entity;
 
+import java.util.List;
 import java.util.Set;
 
 public class ShareList {
@@ -7,7 +8,8 @@ public class ShareList {
     private String title;
     private String description;
     private String userId;
-    private Set<ShareItem> items;
+    private String type;
+    private List<ShareItem> items;
 
     public String getTitle() {
         return title;
@@ -25,6 +27,14 @@ public class ShareList {
         this.description = description;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public String getUserId() {
         return userId;
     }
@@ -33,11 +43,11 @@ public class ShareList {
         this.userId = userId;
     }
 
-    public Set<ShareItem> getItems() {
+    public List<ShareItem> getItems() {
         return items;
     }
 
-    public void setItems(Set<ShareItem> items) {
+    public void setItems(List<ShareItem> items) {
         this.items = items;
     }
 }

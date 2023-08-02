@@ -20,21 +20,17 @@ public class ListController {
     ListService listService;
 
     @GetMapping(value="/{id}", produces= MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ShareList getSharedList(@PathVariable("id") String id) throws Throwable {
+    public @ResponseBody ShareList getSharedList(@PathVariable String id) throws Throwable {
 
+        ShareList shareList;
 
+        try{
+            shareList = listService.getList(id);
+        } catch (Exception e){
+            return null;
+        }
 
-        /*final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("sharelists");
-
-        DatabaseReference currentListRef = ref.child("nop-qrs");
-
-        ShareList list = new ShareList();
-        list.setTitle("Seconda prova");
-
-        currentListRef.setValueAsync(list);*/
-
-        return new ShareList();
+        return shareList;
     }
 
     @PostMapping(value="/list", consumes = MediaType.APPLICATION_JSON_VALUE, produces= MediaType.APPLICATION_JSON_VALUE)

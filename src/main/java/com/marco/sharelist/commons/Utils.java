@@ -31,8 +31,6 @@ public class Utils {
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
 
-        logger.debug("new listName " + listName);
-
         return listName;
 
     }
