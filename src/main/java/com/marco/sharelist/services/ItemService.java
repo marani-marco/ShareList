@@ -1,5 +1,6 @@
 package com.marco.sharelist.services;
 
+import com.google.api.core.SettableApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -29,34 +30,64 @@ public class ItemService {
 
         logger.info("Enter saveItem method");
 
-        DatabaseReference mainRef = database.getReference("sharelists/" + listId);
-        ValueEventListener valueEventListener = new ValueEventListener() {
+        database = FirebaseDatabase.getInstance();
+
+        final SettableApiFuture<DataSnapshot> future = SettableApiFuture.create();
+
+        DatabaseReference mainRef = database.getReference("sharelists/" + listId + "/items").child(Utils.generateListName());
+        mainRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if (snapshot.getValue() != null) {
-
-                    DatabaseReference listRef = mainRef.child("items");
-                    DatabaseReference itemRef = listRef.child(Utils.generateListName());
-                    itemRef.setValueAsync(item);
-
-                    mainRef.removeEventListener(this);
-
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null)
+                    saveItem(listId, item);
+                else {
+                    logger.info("Saving new item");
+                    mainRef.setValueAsync(item);
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                future.setException(databaseError.toException());
             }
-        };
-
-        mainRef.addValueEventListener(valueEventListener);
+        });
 
         logger.info("Exit saveItem method");
     }
 
     public void updateItem(String listId, String itemId, ShareItem item) {
-        logger.info("Enter updateItem method");
+
+        logger.info("Enter saveItem method");
+
+        database = FirebaseDatabase.getInstance();
+
+        final SettableApiFuture<DataSnapshot> future = SettableApiFuture.create();
+
+        DatabaseReference mainRef = database.getReference("sharelists/" + listId + "/items").child(itemId);
+        mainRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    Map<String, Object> shareItemUpdate = new HashMap<>();
+                    shareItemUpdate.put("title", item.getTitle());
+                    shareItemUpdate.put("description", item.getDescription());
+                    shareItemUpdate.put("userAssigned", item.getUserAssigned());
+                    shareItemUpdate.put("completed", item.getCompleted());
+                    shareItemUpdate.put("confirmComplete", item.getConfirmComplete());
+
+                    mainRef.updateChildrenAsync(shareItemUpdate);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                future.setException(databaseError.toException());
+            }
+        });
+
+        logger.info("Exit saveItem method");
+
+        /*logger.info("Enter updateItem method");
 
         DatabaseReference mainRef = database.getReference("sharelists/" + listId);
         ValueEventListener valueEventListener = new ValueEventListener() {
@@ -88,7 +119,7 @@ public class ItemService {
 
         mainRef.addValueEventListener(valueEventListener);
 
-        logger.info("Exit updateItem method");
+        logger.info("Exit updateItem method");*/
     }
 
     public void deleteItem(String listId, String itemId) {
@@ -131,8 +162,8 @@ public class ItemService {
 
         File jsonDecrypt = new File("src/main/resources/firebase_decrypt.json");
 
-        if (jsonDecrypt.delete())
-            logger.info("File decrypt cancellato");
+        jsonDecrypt.delete();
+
     }
 
 

@@ -30,98 +30,6 @@ public class ListService {
     private static final Logger logger = LoggerFactory.getLogger(ListService.class);
     private FirebaseDatabase database;
 
-    public void saveList(ShareList shareList){
-
-        database = FirebaseDatabase.getInstance();
-
-        logger.info("Enter saveList method");
-
-        DatabaseReference mainRef = database.getReference("sharelists");
-
-        final DatabaseReference currentListRef = mainRef.child(Utils.generateListName());
-
-        ValueEventListener valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if (snapshot.getValue() != null) {
-                    saveList(shareList);
-                } else {
-                    logger.info("Saving new list...");
-                    currentListRef.setValueAsync(shareList);
-                    currentListRef.removeEventListener(this); // to avoid listener loop
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-        currentListRef.addValueEventListener(valueEventListener);
-
-        logger.info("Exit saveList method");
-
-    }
-
-    public void updateListData(String id, ShareList shareList) throws Exception {
-        logger.info("Enter updateListData method with id " + id);
-
-        database = FirebaseDatabase.getInstance();
-
-        DatabaseReference mainRef = database.getReference("sharelists");
-
-        final DatabaseReference currentListRef = mainRef.child(id);
-
-        ValueEventListener valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-
-                if (snapshot.getValue() != null) {
-                    Map<String, Object> shareListUpdate = new HashMap<>();
-                    shareListUpdate.put("title", shareList.getTitle());
-                    shareListUpdate.put("description", shareList.getDescription());
-                    shareListUpdate.put("type", shareList.getType());
-
-                    currentListRef.updateChildrenAsync(shareListUpdate);
-                    currentListRef.removeEventListener(this);
-                } else {
-                    currentListRef.removeEventListener(this); // to avoid listener loop
-                    throw new RuntimeException("List not exists");
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-        currentListRef.addValueEventListener(valueEventListener);
-
-        logger.info("Exit updateListData method with id " + id);
-    }
-
-    public void deleteList(String id) {
-
-        logger.info("Enter deleteList method with id " + id);
-
-        database = FirebaseDatabase.getInstance();
-
-        DatabaseReference mainRef = database.getReference("sharelists");
-
-        mainRef.child(id).removeValue(new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-
-            }
-        });
-
-        logger.info("Exit deleteList method with id " + id);
-
-    }
-
     public ShareList getList(String id) {
 
         logger.info("Enter getList method");
@@ -186,32 +94,91 @@ public class ListService {
             return null;
         }
 
-        /*DatabaseReference mainRef = database.getReference("sharelists");
+    }
 
-        final DatabaseReference currentListRef = mainRef.child(id);
+    public void saveList(ShareList shareList){
 
-        ShareList shareList = new ShareList();
+        logger.info("Enter saveList method");
 
-        ValueEventListener valueEventListener = new ValueEventListener() {
+        database = FirebaseDatabase.getInstance();
+
+        final SettableApiFuture<DataSnapshot> future = SettableApiFuture.create();
+
+        DatabaseReference mainRef = database.getReference("sharelists");
+
+        DatabaseReference childRef = mainRef.child(Utils.generateListName());
+        childRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                shareList = snapshot.getValue(ShareList.class);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() != null)
+                    saveList(shareList);
+                else {
+                    logger.info("Saving new list");
+                    childRef.setValueAsync(shareList);
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                future.setException(databaseError.toException());
             }
-        };
+        });
 
-        currentListRef.addValueEventListener(valueEventListener);
-
-        logger.info("Exit getList method");
-
-        return shareList;*/
-
-
+        logger.info("Exit saveList method");
 
     }
+
+    public void updateListData(String id, ShareList shareList) throws Exception {
+
+        logger.info("Enter updateListData method");
+
+        database = FirebaseDatabase.getInstance();
+
+        final SettableApiFuture<DataSnapshot> future = SettableApiFuture.create();
+
+        DatabaseReference listReference = database.getReference("sharelists/" + id);
+        listReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() != null) {
+                    Map<String, Object> shareListUpdate = new HashMap<>();
+                    shareListUpdate.put("title", shareList.getTitle());
+                    shareListUpdate.put("description", shareList.getDescription());
+                    shareListUpdate.put("type", shareList.getType());
+
+                    listReference.updateChildrenAsync(shareListUpdate);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                future.setException(databaseError.toException());
+            }
+        });
+
+        logger.info("Exit updateListData method");
+
+    }
+
+    public void deleteList(String id) {
+
+        logger.info("Enter deleteList method with id " + id);
+
+        database = FirebaseDatabase.getInstance();
+
+        DatabaseReference mainRef = database.getReference("sharelists");
+
+        mainRef.child(id).removeValue(new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+
+            }
+        });
+
+        logger.info("Exit deleteList method with id " + id);
+
+    }
+
 
 }

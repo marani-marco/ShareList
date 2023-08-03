@@ -3,6 +3,7 @@ package com.marco.sharelist.controller;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.marco.sharelist.commons.CryptoUtils;
+import com.marco.sharelist.dto.Response;
 import com.marco.sharelist.entity.ShareList;
 import com.marco.sharelist.services.ListService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,53 +21,82 @@ public class ListController {
     ListService listService;
 
     @GetMapping(value="/{id}", produces= MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ShareList getSharedList(@PathVariable String id) throws Throwable {
+    public Response getSharedList(@PathVariable String id) throws Throwable {
 
         ShareList shareList;
 
         try{
             shareList = listService.getList(id);
         } catch (Exception e){
-            return null;
+            Response response = new Response();
+            response.setResult("KO");
+            response.setErrorDescription(e.getMessage());
+
+            return response;
         }
 
-        return shareList;
+        Response response = new Response();
+        response.setResult("OK");
+        response.setShareList(shareList);
+
+        return response;
     }
 
     @PostMapping(value="/list", consumes = MediaType.APPLICATION_JSON_VALUE, produces= MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity newSharedList(@RequestBody ShareList shareList){
+    public Response newSharedList(@RequestBody ShareList shareList){
 
         try{
             listService.saveList(shareList);
         } catch (Exception e){
-            return ResponseEntity.internalServerError().build();
+            Response response = new Response();
+            response.setResult("KO");
+            response.setErrorDescription(e.getMessage());
+
+            return response;
         }
 
-        return ResponseEntity.ok("Success");
+        Response response = new Response();
+        response.setResult("OK");
+
+        return response;
     }
 
     @PutMapping(value="/list/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces= MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity updateSharedListData(@PathVariable String id, @RequestBody ShareList shareList){
+    public Response updateSharedListData(@PathVariable String id, @RequestBody ShareList shareList){
 
         try{
             listService.updateListData(id, shareList);
         } catch (Exception e){
-            return ResponseEntity.internalServerError().build();
+            Response response = new Response();
+            response.setResult("KO");
+            response.setErrorDescription(e.getMessage());
+
+            return response;
         }
 
-        return ResponseEntity.ok("Success");
+        Response response = new Response();
+        response.setResult("OK");
+
+        return response;
     }
 
     @DeleteMapping(value="/list/{id}")
-    public ResponseEntity deleteSharedList(@PathVariable String id){
+    public Response deleteSharedList(@PathVariable String id){
 
         try{
             listService.deleteList(id);
         } catch (Exception e){
-            return ResponseEntity.internalServerError().build();
+            Response response = new Response();
+            response.setResult("KO");
+            response.setErrorDescription(e.getMessage());
+
+            return response;
         }
 
-        return ResponseEntity.ok("Success");
+        Response response = new Response();
+        response.setResult("OK");
+
+        return response;
     }
 
 
