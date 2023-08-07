@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -142,6 +144,15 @@ public class ItemService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void firebaseInit() throws Throwable {
+
+        URL resource = this.getClass().getResource("/firebase_decrypt.json");
+        File is = null;
+        try {
+            is = new File(resource.toURI());
+        } catch (URISyntaxException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
         logger.info("Inizializzazione firebase");
         CryptoUtils.decrypt(
