@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -143,13 +144,12 @@ public class ItemService {
     public void firebaseInit() throws Throwable {
 
         logger.info("Inizializzazione firebase");
-
         CryptoUtils.decrypt(
-                new FileInputStream("src/main/resources/firebase.json"),
-                new FileOutputStream("src/main/resources/firebase_decrypt.json"));
+                getClass().getResourceAsStream("/firebase.json"),
+                new FileOutputStream(getClass().getResource("/").getFile() + "firebase_decrypt.json"));
 
-        FileInputStream serviceAccount =
-                new FileInputStream("src/main/resources/firebase_decrypt.json");
+        InputStream serviceAccount =
+               getClass().getResourceAsStream("/firebase_decrypt.json");
 
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -159,10 +159,6 @@ public class ItemService {
         FirebaseApp.initializeApp(options);
 
         database = FirebaseDatabase.getInstance();
-
-        File jsonDecrypt = new File("src/main/resources/firebase_decrypt.json");
-
-        jsonDecrypt.delete();
 
     }
 
