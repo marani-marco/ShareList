@@ -146,7 +146,7 @@ public class ItemService {
         logger.info("Inizializzazione firebase");
         CryptoUtils.decrypt(
                 getClass().getResourceAsStream("/firebase.json"),
-                new FileOutputStream(getClass().getResource("/").getFile() + "firebase_decrypt.json"));
+                new FileOutputStream(getClass().getResource("/firebase_decrypt.json").getFile()));
 
         InputStream serviceAccount =
                getClass().getResourceAsStream("/firebase_decrypt.json");
