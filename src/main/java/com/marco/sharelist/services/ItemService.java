@@ -145,11 +145,11 @@ public class ItemService {
         logger.info("Inizializzazione firebase");
 
         CryptoUtils.decrypt(
-                new FileInputStream("firebase.json"),
-                new FileOutputStream("firebase_decrypt.json"));
+                new FileInputStream("src/main/resources/firebase.json"),
+                new FileOutputStream("src/main/resources/firebase_decrypt.json"));
 
         FileInputStream serviceAccount =
-                new FileInputStream("firebase_decrypt.json");
+                new FileInputStream("src/main/resources/firebase_decrypt.json");
 
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -160,7 +160,7 @@ public class ItemService {
 
         database = FirebaseDatabase.getInstance();
 
-        File jsonDecrypt = new File("firebase_decrypt.json");
+        File jsonDecrypt = new File("src/main/resources/firebase_decrypt.json");
 
         jsonDecrypt.delete();
 
