@@ -145,14 +145,10 @@ public class ItemService {
     @EventListener(ApplicationReadyEvent.class)
     public void firebaseInit() throws Throwable {
 
-        URL resource = this.getClass().getResource("/firebase_decrypt.json");
-        File is = null;
-        try {
-            is = new File(resource.toURI());
-        } catch (URISyntaxException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        URL url = classLoader.getResource("firebase.json");
+        File file = new File(url.toURI().getPath());
+        file.createNewFile();
 
         logger.info("Inizializzazione firebase");
         CryptoUtils.decrypt(
