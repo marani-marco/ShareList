@@ -13,15 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.URISyntaxException;
+import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemService {
@@ -145,18 +141,14 @@ public class ItemService {
     @EventListener(ApplicationReadyEvent.class)
     public void firebaseInit() throws Throwable {
 
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        URL url = classLoader.getResource("firebase.json");
-        File file = new File(url.toURI().getPath());
-        file.createNewFile();
-
         logger.info("Inizializzazione firebase");
+
         CryptoUtils.decrypt(
-                getClass().getResourceAsStream("/firebase.json"),
-                new FileOutputStream(getClass().getResource("/firebase_decrypt.json").getFile()));
+                getClass().getResourceAsStream("/firebase_encrypted.json"),
+                new FileOutputStream("firebase.json"));
 
         InputStream serviceAccount =
-               getClass().getResourceAsStream("/firebase_decrypt.json");
+                new FileInputStream("firebase.json");
 
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
